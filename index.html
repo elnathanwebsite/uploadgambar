@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -115,9 +115,10 @@
             const uploadStatus = document.getElementById('uploadStatus');
             const fileInput = document.getElementById('filegambar');
 
-            // GANTI URL INI dengan URL API backend Anda di InfinityFree
-            const apiUrlGetImages = 'https://databasegambar.ct.ws/get_images.php';
-            const apiUrlUpload = 'https://databasegambar.ct.ws/upload.php';
+            // === URL SUDAH DISESUAIKAN ===
+            const apiUrlGetImages = 'http://databasegambar.ct.ws/get_images.php';
+            const apiUrlUpload = 'http://databasegambar.ct.ws/upload.php';
+            const baseImageUrl = 'http://databasegambar.ct.ws/uploads/';
 
             // === FUNGSI UNTUK MENGAMBIL & MENAMPILKAN GAMBAR (READ) ===
             async function fetchAndDisplayImages() {
@@ -132,7 +133,8 @@
                             result.data.forEach(image => {
                                 const imageBox = document.createElement('div');
                                 imageBox.className = 'image-box';
-                                imageBox.innerHTML = `<img src="http://proyek-gambar-saya.22web.org/uploads/${image.filegambar}" alt="${image.filegambar}"><p>${image.filegambar}</p>`;
+                                // Menggunakan URL gambar yang sudah disesuaikan
+                                imageBox.innerHTML = `<img src="${baseImageUrl}${image.filegambar}" alt="${image.filegambar}"><p>${image.filegambar}</p>`;
                                 galleryContainer.appendChild(imageBox);
                             });
                         } else {
