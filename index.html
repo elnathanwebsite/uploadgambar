@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload & Galeri Gambar</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+        }
+
+        hr {
+            margin: 30px 0;
+        }
+
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .image-box {
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .image-box img {
+            max-width: 150px;
+            max-height: 150px;
+        }
+
+        .image-box p {
+            font-size: 12px;
+            word-break: break-all;
+            margin: 5px 0 0 0;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Form Upload Gambar</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="filegambar">Pilih gambar untuk di-upload:</label>
+            <input type="file" name="filegambar" id="filegambar" required>
+            <button type="submit" id="uploadButton">Upload Gambar</button>
+        </form>
+        <div id="uploadStatus" class="status-message"></div>
+    </div>
+
+    <hr>
+
+    <h2>Galeri Gambar</h2>
+    <div id="gallery">
+        <p>Memuat galeri...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // === KONFIGURASI ===
+            const galleryContainer = document.getElementById('gallery');
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadButton = document.getElementById('uploadButton');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const fileInput = document.getElementById('filegambar');
+
+            // GANTI URL INI dengan URL API backend Anda di InfinityFree
+            const apiUrlGetImages = 'http://proyek-gambar-saya.22web.org/get_images.php';
+            const apiUrlUpload = 'http://proyek-gambar-saya.22web.org/upload.php';
+
+            // === FUNGSI UNTUK MENGAMBIL & MENAMPILKAN GAMBAR (READ) ===
+            async function fetchAndDisplayImages() {
+                galleryContainer.innerHTML = '<p>Memuat galeri...</p>';
+                try {
+                    const response = await fetch(apiUrlGetImages);
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        galleryContainer.innerHTML = ''; // Kosongkan galeri
+                        if (result.data.length > 0) {
+                            result.data.forEach(image => {
+                                const imageBox = document.createElement('div');
+                                imageBox.className = 'image-box';
+                                imageBox.innerHTML = `<img src="http://proyek-gambar-saya.22web.org/uploads/${image.filegambar}" alt="${image.filegambar}"><p>${image.filegambar}</p>`;
+                                galleryContainer.appendChild(imageBox);
+                            });
+                        } else {
+                            galleryContainer.innerHTML = '<p>Belum ada gambar di galeri.</p>';
+                        }
+                    } else {
+                        galleryContainer.innerHTML = `<p>Error: ${result.message}</p>`;
+                    }
+                } catch (error) {
+                    console.error('Gagal mengambil data dari API:', error);
+                    galleryContainer.innerHTML = '<p>Gagal memuat galeri. Cek koneksi dan URL API.</p>';
+                }
+            }
+
+            // === FUNGSI UNTUK MENG-HANDLE UPLOAD (CREATE) ===
+            uploadForm.addEventListener('submit', async function (event) {
+                event.preventDefault(); // Mencegah form refresh halaman
+
+                const formData = new FormData();
+                formData.append('filegambar', fileInput.files[0]);
+
+                // Tampilkan status & nonaktifkan tombol
+                uploadStatus.style.display = 'block';
+                uploadStatus.textContent = 'Mengupload...';
+                uploadStatus.className = 'status-message';
+                uploadButton.disabled = true;
+
+                try {
+                    const response = await fetch(apiUrlUpload, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        uploadStatus.textContent = result.message;
+                        uploadStatus.classList.add('success');
+                        uploadForm.reset(); // Kosongkan form input
+                        fetchAndDisplayImages(); // Muat ulang galeri untuk menampilkan gambar baru
+                    } else {
+                        uploadStatus.textContent = result.message;
+                        uploadStatus.classList.add('error');
+                    }
+                } catch (error) {
+                    console.error('Gagal upload:', error);
+                    uploadStatus.textContent = 'Terjadi kesalahan jaringan saat mengupload.';
+                    uploadStatus.classList.add('error');
+                } finally {
+                    uploadButton.disabled = false; // Aktifkan kembali tombol
+                }
+            });
+
+            // Panggil fungsi untuk memuat galeri saat halaman pertama kali dibuka
+            fetchAndDisplayImages();
+        });
+    </script>
+
+</body>
+
+</html>
