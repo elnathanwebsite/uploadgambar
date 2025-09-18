@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,83 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload & Galeri Gambar</title>
     <style>
-        body {
-            font-family: sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-        }
-
-        .container {
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        input,
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            background-color: #aaa;
-        }
-
-        hr {
-            margin: 30px 0;
-        }
-
-        #gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .image-box {
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .image-box img {
-            max-width: 150px;
-            max-height: 150px;
-        }
-
-        .image-box p {
-            font-size: 12px;
-            word-break: break-all;
-            margin: 5px 0 0 0;
-        }
-
-        .status-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            display: none;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
+        body { font-family: sans-serif; max-width: 800px; margin: 50px auto; padding: 15px; background-color: #f4f4f9; }
+        .container { background-color: white; border: 1px solid #ccc; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; }
+        input, button { width: 100%; padding: 12px; margin-top: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #007BFF; color: white; border: none; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #aaa; }
+        hr { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
+        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .image-box { background-color: white; border: 1px solid #ddd; padding: 5px; border-radius: 4px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .image-box img { width: 100%; height: 120px; object-fit: cover; border-radius: 2px; }
+        .image-box p { font-size: 12px; word-break: break-all; margin: 8px 0 0 0; color: #555; }
+        .status-message { margin-top: 15px; padding: 10px; border-radius: 5px; text-align: center; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 
@@ -107,20 +45,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-
-            // === KONFIGURASI ===
             const galleryContainer = document.getElementById('gallery');
             const uploadForm = document.getElementById('uploadForm');
             const uploadButton = document.getElementById('uploadButton');
             const uploadStatus = document.getElementById('uploadStatus');
             const fileInput = document.getElementById('filegambar');
 
-            // === URL SUDAH DISESUAIKAN ===
- const apiUrlGetImages = 'https://databasegambar.ct.ws/get_images.php';
-const apiUrlUpload = 'https://databasegambar.ct.ws/upload.php';
-const baseImageUrl = 'https://databasegambar.ct.ws/uploads/';
+            // === GANTI DENGAN DOMAIN INFINITYFREE ANDA ===
+            const backendDomain = 'https://databasegambar.ct.ws'; // <-- PENTING!
 
-            // === FUNGSI UNTUK MENGAMBIL & MENAMPILKAN GAMBAR (READ) ===
+            const apiUrlGetImages = `${backendDomain}/get_images.php`;
+            const apiUrlUpload = `${backendDomain}/upload.php`;
+            const baseImageUrl = `${backendDomain}/uploads/`;
+
             async function fetchAndDisplayImages() {
                 galleryContainer.innerHTML = '<p>Memuat galeri...</p>';
                 try {
@@ -128,12 +65,11 @@ const baseImageUrl = 'https://databasegambar.ct.ws/uploads/';
                     const result = await response.json();
 
                     if (result.status === 'success') {
-                        galleryContainer.innerHTML = ''; // Kosongkan galeri
-                        if (result.data.length > 0) {
+                        galleryContainer.innerHTML = '';
+                        if (result.data && result.data.length > 0) {
                             result.data.forEach(image => {
                                 const imageBox = document.createElement('div');
                                 imageBox.className = 'image-box';
-                                // Menggunakan URL gambar yang sudah disesuaikan
                                 imageBox.innerHTML = `<img src="${baseImageUrl}${image.filegambar}" alt="${image.filegambar}"><p>${image.filegambar}</p>`;
                                 galleryContainer.appendChild(imageBox);
                             });
@@ -145,18 +81,17 @@ const baseImageUrl = 'https://databasegambar.ct.ws/uploads/';
                     }
                 } catch (error) {
                     console.error('Gagal mengambil data dari API:', error);
-                    galleryContainer.innerHTML = '<p>Gagal memuat galeri. Cek koneksi dan URL API.</p>';
+                    galleryContainer.innerHTML = '<p>Gagal memuat galeri. Cek koneksi, URL API, dan header CORS.</p>';
                 }
             }
 
-            // === FUNGSI UNTUK MENG-HANDLE UPLOAD (CREATE) ===
             uploadForm.addEventListener('submit', async function (event) {
-                event.preventDefault(); // Mencegah form refresh halaman
+                event.preventDefault();
+                if (!fileInput.files[0]) return;
 
                 const formData = new FormData();
                 formData.append('filegambar', fileInput.files[0]);
 
-                // Tampilkan status & nonaktifkan tombol
                 uploadStatus.style.display = 'block';
                 uploadStatus.textContent = 'Mengupload...';
                 uploadStatus.className = 'status-message';
@@ -172,8 +107,8 @@ const baseImageUrl = 'https://databasegambar.ct.ws/uploads/';
                     if (result.status === 'success') {
                         uploadStatus.textContent = result.message;
                         uploadStatus.classList.add('success');
-                        uploadForm.reset(); // Kosongkan form input
-                        fetchAndDisplayImages(); // Muat ulang galeri untuk menampilkan gambar baru
+                        uploadForm.reset();
+                        fetchAndDisplayImages();
                     } else {
                         uploadStatus.textContent = result.message;
                         uploadStatus.classList.add('error');
@@ -183,15 +118,13 @@ const baseImageUrl = 'https://databasegambar.ct.ws/uploads/';
                     uploadStatus.textContent = 'Terjadi kesalahan jaringan saat mengupload.';
                     uploadStatus.classList.add('error');
                 } finally {
-                    uploadButton.disabled = false; // Aktifkan kembali tombol
+                    uploadButton.disabled = false;
                 }
             });
 
-            // Panggil fungsi untuk memuat galeri saat halaman pertama kali dibuka
             fetchAndDisplayImages();
         });
     </script>
 
 </body>
-
 </html>
